@@ -5,6 +5,7 @@
     <Authors>Sergio Luiz de Souza</Authors>
     <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Product>Konekto Standard</Product>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
