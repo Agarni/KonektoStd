@@ -34,6 +34,9 @@ namespace KonektoStd
         private IDbConnection dbConn = null;
         private IDbTransaction dbTransaction = null;
         private bool _manterConectado = false;
+
+        // Verifica chamadas redundantes
+        private bool _disposed = false;
         #endregion Variáveis globais
 
         #region Propriedades
@@ -70,11 +73,6 @@ namespace KonektoStd
             dbTransaction = null;
         }
 
-        static DBConexao()
-        {
-            //_ = new Helpers.Inicializador();
-        }
-
         public DBConexao(string dsnOdbc, string extraConnString = null, string usuario = null, string senha = null)
         {
             InicializaVariaveis();
@@ -96,7 +94,7 @@ namespace KonektoStd
                     {
                         UserID = usuario,
                         Password = senha,
-                        DataSource = servidor,
+                        DataSource = servidor.Contains("/") ? servidor.Substring(0, servidor.IndexOf("/")) : servidor,
                         Database = database,
                         Port = (porta > 0 ? porta : (servidor.Contains("/") ?
                             int.Parse(servidor.Substring(servidor.IndexOf("/") + 1)) :
@@ -322,6 +320,28 @@ namespace KonektoStd
             }
         }
 
+        public List<T> ExecutarConsulta<T>(string instrucaoSQL, Dictionary<string, object> parametros = null)
+        {
+            var dt = ExecutarConsulta(instrucaoSQL, parametros);
+
+            try
+            {
+                if (dt != null)
+                {
+                    return dt.ToListof<T>();
+                }
+                else
+                {
+                    return null;
+                }
+            }
+            catch (Exception ex)
+            {
+                UltimoErro = ex.Message;
+                return null;
+            }
+        }
+
         public int ExecutarInstrucao(string instrucaoSQL, Dictionary<string, object> parametros = null)
         {
             int result = 0;
@@ -519,7 +539,22 @@ namespace KonektoStd
 
         public void Dispose()
         {
-            Desconectar();
+            Dispose(true);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            if (disposing)
+            {
+                Desconectar();
+            }
+
+            _disposed = true;
         }
     }
 }
